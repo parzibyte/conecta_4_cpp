@@ -203,6 +203,48 @@ vector<vector<char>> colocar_pieza(int columna, vector<vector<char>> tablero, ch
 	return tablero;
 }
 
+int contarArribaDerecha(int x, int y, char jugador, vector<vector<char>> tablero)
+{
+	int xFin = (x + FICHAS_JUNTAS_NECESARIAS_PARA_GANAR < tablero[0].size()) ? x + FICHAS_JUNTAS_NECESARIAS_PARA_GANAR - 1 : tablero[0].size() - 1;
+	int yInicio = (y - FICHAS_JUNTAS_NECESARIAS_PARA_GANAR >= 0) ? y - FICHAS_JUNTAS_NECESARIAS_PARA_GANAR + 1 : 0;
+	int contador = 0;
+	while (x <= xFin && yInicio <= y)
+	{
+		if (tablero[y][x] == jugador)
+		{
+			contador++;
+		}
+		else
+		{
+			return contador;
+		}
+		x++;
+		y--;
+	}
+	return contador;
+}
+
+int contarArribaIzquierda(int x, int y, char jugador, vector<vector<char>> tablero)
+{
+	int xFin = (x - FICHAS_JUNTAS_NECESARIAS_PARA_GANAR >= 0) ? x - FICHAS_JUNTAS_NECESARIAS_PARA_GANAR + 1 : 0;
+	int yInicio = (y - FICHAS_JUNTAS_NECESARIAS_PARA_GANAR >= 0) ? y - FICHAS_JUNTAS_NECESARIAS_PARA_GANAR + 1 : 0;
+	int contador = 0;
+	while (x >= xFin && yInicio <= y)
+	{
+		if (tablero[y][x] == jugador)
+		{
+			contador++;
+		}
+		else
+		{
+			return contador;
+		}
+		x--;
+		y--;
+	}
+	return contador;
+}
+
 int contarArriba(int x, int y, char jugador, vector<vector<char>> tablero)
 {
 	int yInicio = (y - FICHAS_JUNTAS_NECESARIAS_PARA_GANAR >= 0) ? y - FICHAS_JUNTAS_NECESARIAS_PARA_GANAR + 1 : 0;
@@ -215,7 +257,25 @@ int contarArriba(int x, int y, char jugador, vector<vector<char>> tablero)
 		}
 		else
 		{
-			contador = 0;
+			return contador;
+		}
+	}
+	return contador;
+}
+
+int contarAbajo(int x, int y, char jugador, vector<vector<char>> tablero)
+{
+	int yFin = (y + FICHAS_JUNTAS_NECESARIAS_PARA_GANAR <= tablero.size() - 1) ? y + FICHAS_JUNTAS_NECESARIAS_PARA_GANAR - 1 : tablero.size() - 1;
+	int contador = 0;
+	for (; y <= yFin; y++)
+	{
+		if (tablero[y][x] == jugador)
+		{
+			contador++;
+		}
+		else
+		{
+			return contador;
 		}
 	}
 	return contador;
@@ -233,29 +293,8 @@ int contarDerecha(int x, int y, char jugador, vector<vector<char>> tablero)
 		}
 		else
 		{
-			contador = 0;
+			return contador;
 		}
-	}
-	return contador;
-}
-
-int contarArribaDerecha(int x, int y, char jugador, vector<vector<char>> tablero)
-{
-	int xFin = (x + FICHAS_JUNTAS_NECESARIAS_PARA_GANAR < tablero[0].size()) ? x + FICHAS_JUNTAS_NECESARIAS_PARA_GANAR - 1 : tablero[0].size() - 1;
-	int yInicio = (y - FICHAS_JUNTAS_NECESARIAS_PARA_GANAR >= 0) ? y - FICHAS_JUNTAS_NECESARIAS_PARA_GANAR + 1 : 0;
-	int contador = 0;
-	while (x <= xFin && yInicio <= y)
-	{
-		if (tablero[y][x] == jugador)
-		{
-			contador++;
-		}
-		else
-		{
-			contador = 0;
-		}
-		x++;
-		y--;
 	}
 	return contador;
 }
@@ -273,9 +312,47 @@ int contarAbajoDerecha(int x, int y, char jugador, vector<vector<char>> tablero)
 		}
 		else
 		{
-			contador = 0;
+			return contador;
 		}
 		x++;
+		y++;
+	}
+	return contador;
+}
+int contarIzquierda(int x, int y, char jugador, vector<vector<char>> tablero)
+{
+	int xFin = (x - FICHAS_JUNTAS_NECESARIAS_PARA_GANAR >= 0) ? x - FICHAS_JUNTAS_NECESARIAS_PARA_GANAR + 1 : 0;
+	int contador = 0;
+	for (; x >= xFin; x--)
+	{
+		if (tablero[y][x] == jugador)
+		{
+			contador++;
+		}
+		else
+		{
+			return contador;
+		}
+	}
+	return contador;
+}
+int contarAbajoIzquierda(int x, int y, char jugador, vector<vector<char>> tablero)
+{
+	int xFin = (x - FICHAS_JUNTAS_NECESARIAS_PARA_GANAR >= 0) ? x - FICHAS_JUNTAS_NECESARIAS_PARA_GANAR + 1 : 0;
+	int yFin = (y + FICHAS_JUNTAS_NECESARIAS_PARA_GANAR < tablero.size()) ? y + FICHAS_JUNTAS_NECESARIAS_PARA_GANAR - 1 : tablero.size() - 1;
+	int contador = 0;
+	while (x >= xFin && y <= yFin)
+	{
+
+		if (tablero[y][x] == jugador)
+		{
+			contador++;
+		}
+		else
+		{
+			return contador;
+		}
+		x--;
 		y++;
 	}
 	return contador;
@@ -297,7 +374,7 @@ bool jugador_gana(char jugador, vector<vector<char>> tablero)
 		int x;
 		for (x = 0; x < tablero[y].size(); x++)
 		{
-			if (contarArriba(x, y, jugador, tablero) >= FICHAS_JUNTAS_NECESARIAS_PARA_GANAR)
+			if (contarAbajo(x, y, jugador, tablero) >= FICHAS_JUNTAS_NECESARIAS_PARA_GANAR)
 			{
 				return true;
 			}
@@ -307,7 +384,7 @@ bool jugador_gana(char jugador, vector<vector<char>> tablero)
 				return true;
 			}
 
-			if (contarArribaDerecha(x, y, jugador, tablero) >= FICHAS_JUNTAS_NECESARIAS_PARA_GANAR)
+			if (contarAbajoIzquierda(x, y, jugador, tablero) >= FICHAS_JUNTAS_NECESARIAS_PARA_GANAR)
 			{
 				return true;
 			}
@@ -366,33 +443,53 @@ ConteoConColumna obtener_columna_en_la_que_se_obtiene_mayor_puntaje(char jugador
 			int fila_pieza_recien_colocada = obtener_primera_fila_llena(x, tablero);
 			if (fila_pieza_recien_colocada != -1)
 			{
-				int y;
-				for (y = fila_pieza_recien_colocada; y < tablero.size(); y++)
+				conteo = contarArriba(x, fila_pieza_recien_colocada, jugador, tablero);
+				if (conteo > conteoConCoordenada.conteo)
 				{
-					conteo = contarArriba(x, y, jugador, tablero);
-					if (conteo > conteoConCoordenada.conteo)
-					{
-						conteoConCoordenada.conteo = conteo;
-						conteoConCoordenada.columna = x;
-					}
-					conteo = contarArribaDerecha(x, y, jugador, tablero);
-					if (conteo > conteoConCoordenada.conteo)
-					{
-						conteoConCoordenada.conteo = conteo;
-						conteoConCoordenada.columna = x;
-					}
-					conteo = contarDerecha(x, y, jugador, tablero);
-					if (conteo > conteoConCoordenada.conteo)
-					{
-						conteoConCoordenada.conteo = conteo;
-						conteoConCoordenada.columna = x;
-					}
-					conteo = contarAbajoDerecha(x, y, jugador, tablero);
-					if (conteo > conteoConCoordenada.conteo)
-					{
-						conteoConCoordenada.conteo = conteo;
-						conteoConCoordenada.columna = x;
-					}
+					conteoConCoordenada.conteo = conteo;
+					conteoConCoordenada.columna = x;
+				}
+				conteo = contarAbajo(x, fila_pieza_recien_colocada, jugador, tablero);
+				if (conteo > conteoConCoordenada.conteo)
+				{
+					conteoConCoordenada.conteo = conteo;
+					conteoConCoordenada.columna = x;
+				}
+				conteo = contarDerecha(x, fila_pieza_recien_colocada, jugador, tablero);
+				if (conteo > conteoConCoordenada.conteo)
+				{
+					conteoConCoordenada.conteo = conteo;
+					conteoConCoordenada.columna = x;
+				}
+				conteo = contarIzquierda(x, fila_pieza_recien_colocada, jugador, tablero);
+				if (conteo > conteoConCoordenada.conteo)
+				{
+					conteoConCoordenada.conteo = conteo;
+					conteoConCoordenada.columna = x;
+				}
+				conteo = contarAbajoIzquierda(x, fila_pieza_recien_colocada, jugador, tablero);
+				if (conteo > conteoConCoordenada.conteo)
+				{
+					conteoConCoordenada.conteo = conteo;
+					conteoConCoordenada.columna = x;
+				}
+				conteo = contarArribaDerecha(x, fila_pieza_recien_colocada, jugador, tablero);
+				if (conteo > conteoConCoordenada.conteo)
+				{
+					conteoConCoordenada.conteo = conteo;
+					conteoConCoordenada.columna = x;
+				}
+				conteo = contarAbajoDerecha(x, fila_pieza_recien_colocada, jugador, tablero);
+				if (conteo > conteoConCoordenada.conteo)
+				{
+					conteoConCoordenada.conteo = conteo;
+					conteoConCoordenada.columna = x;
+				}
+				conteo = contarArribaIzquierda(x, fila_pieza_recien_colocada, jugador, tablero);
+				if (conteo > conteoConCoordenada.conteo)
+				{
+					conteoConCoordenada.conteo = conteo;
+					conteoConCoordenada.columna = x;
 				}
 			}
 		}
@@ -498,7 +595,7 @@ int main()
 	auto tablero = inicializarTablero(configuracion);
 	int jugadorActual = JUGADOR_HUMANO;
 	int conteoParaNoHacerCicloInfinito = 0;
-	while (conteoParaNoHacerCicloInfinito < 10)
+	while (conteoParaNoHacerCicloInfinito < 100)
 	{
 		imprimir_tablero(tablero);
 		int columna;
@@ -516,4 +613,20 @@ int main()
 		jugadorActual = obtener_oponente(jugadorActual);
 		conteoParaNoHacerCicloInfinito++;
 	}
+	/*
+	tablero = colocar_pieza(0, tablero, JUGADOR_HUMANO);
+	tablero = colocar_pieza(1, tablero, JUGADOR_HUMANO);
+	tablero = colocar_pieza(1, tablero, JUGADOR_HUMANO);
+	tablero = colocar_pieza(2, tablero, JUGADOR_HUMANO);
+	tablero = colocar_pieza(2, tablero, JUGADOR_HUMANO);
+	tablero = colocar_pieza(2, tablero, JUGADOR_HUMANO);
+	tablero = colocar_pieza(3, tablero, JUGADOR_HUMANO);
+	tablero = colocar_pieza(3, tablero, JUGADOR_HUMANO);
+	tablero = colocar_pieza(3, tablero, JUGADOR_HUMANO);
+	tablero = colocar_pieza(3, tablero, JUGADOR_HUMANO);
+	imprimir_tablero(tablero);
+	cout << contarAbajoIzquierda(3, 4, JUGADOR_HUMANO, tablero) << endl;
+	cout << contarAbajoIzquierda(4, 3, JUGADOR_HUMANO, tablero) << endl;
+	cout << contarAbajoIzquierda(0, 0, JUGADOR_HUMANO, tablero) << endl;
+*/
 }

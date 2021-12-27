@@ -418,11 +418,20 @@ int obtener_columna_aleatoria(char jugador, vector<vector<char>> tableroOriginal
 	{
 		tablero = tableroOriginal;
 		int columna = aleatorio_en_rango(0, tablero[0].size() - 1);
-		if (obtener_primera_fila_vacia(columna, tablero))
+		if (obtener_primera_fila_vacia(columna, tablero) != -1)
 		{
 			return columna;
 		}
 	}
+}
+int obtener_columna_central(char jugador, vector<vector<char>> tableroOriginal)
+{
+	int mitad = (tableroOriginal[0].size() - 1) / 2;
+	if (obtener_primera_fila_vacia(mitad, tableroOriginal) != -1)
+	{
+		return mitad;
+	}
+	return -1;
 }
 int main()
 {
@@ -439,7 +448,5 @@ int main()
 	ConteoConColumna mejor = obtener_columna_en_la_que_se_obtiene_mayor_puntaje(CPU, tablero);
 	cout << endl
 		 << endl
-		 << obtener_columna_aleatoria(CPU, tablero);
-	cout << "-------" << endl;
-	imprimir_tablero(tablero);
+		 << obtener_columna_central(CPU, tablero);
 }

@@ -13,8 +13,8 @@ const int COLUMNAS_DEFECTO = 10,
 		  FILAS_DEFECTO = 10,
 		  FICHAS_JUNTAS_NECESARIAS_PARA_GANAR = 4;
 const char ESPACIO_VACIO = ' ',
-		   JUGADOR = 'X',
-		   CPU = 'O';
+		   JUGADOR_HUMANO = 'X',
+		   JUGADOR_CPU = 'O';
 
 struct ConfiguracionTablero
 {
@@ -174,14 +174,14 @@ int obtener_primera_fila_vacia(int columna, vector<vector<char>> tablero)
 	}
 	return -1;
 }
-int solicitar_columna(int columnas, vector<vector<char>> tablero)
+int solicitar_columna(vector<vector<char>> tablero)
 {
 	while (true)
 	{
 		cout << "Seleccione columna para su tirada: ";
 		int columna;
 		cin >> columna;
-		if (columna >= 0 && columna <= columnas - 1)
+		if (columna >= 0 && columna <= tablero[0].size() - 1)
 		{
 			return columna;
 		}
@@ -242,7 +242,7 @@ int contarDerecha(int x, int y, char jugador, vector<vector<char>> tablero)
 int contarArribaDerecha(int x, int y, char jugador, vector<vector<char>> tablero)
 {
 	int xFin = (x + FICHAS_JUNTAS_NECESARIAS_PARA_GANAR < tablero[0].size()) ? x + FICHAS_JUNTAS_NECESARIAS_PARA_GANAR - 1 : tablero[0].size() - 1;
-	int yInicio = (y - tablero[0].size() >= 0) ? y - FICHAS_JUNTAS_NECESARIAS_PARA_GANAR + 1 : 0;
+	int yInicio = (y - FICHAS_JUNTAS_NECESARIAS_PARA_GANAR >= 0) ? y - FICHAS_JUNTAS_NECESARIAS_PARA_GANAR + 1 : 0;
 	int contador = 0;
 	while (x <= xFin && yInicio <= y)
 	{
@@ -320,7 +320,7 @@ bool jugador_gana(char jugador, vector<vector<char>> tablero)
 	return false;
 }
 
-int obtener_columna_ganadora_para_cpu(vector<vector<char>> tablero)
+int obtener_columna_ganadora(char jugador, vector<vector<char>> tablero)
 {
 	vector<vector<char>> tablero_original;
 	tablero_original = tablero;
@@ -330,8 +330,8 @@ int obtener_columna_ganadora_para_cpu(vector<vector<char>> tablero)
 		tablero = tablero_original;
 		if (obtener_primera_fila_vacia(i, tablero) != -1)
 		{
-			tablero = colocar_pieza(i, tablero, CPU);
-			if (jugador_gana(CPU, tablero))
+			tablero = colocar_pieza(i, tablero, jugador);
+			if (jugador_gana(jugador, tablero))
 			{
 				return i;
 			}
@@ -433,20 +433,87 @@ int obtener_columna_central(char jugador, vector<vector<char>> tableroOriginal)
 	}
 	return -1;
 }
+char obtener_oponente(char jugador)
+{
+	if (jugador == JUGADOR_HUMANO)
+	{
+		return JUGADOR_CPU;
+	}
+	return JUGADOR_HUMANO;
+}
+int elegir_mejor_columna(char jugador, vector<vector<char>> tablero)
+{
+	// Voy a comprobar si puedo ganar...
+	int posibleColumnaGanadora = obtener_columna_ganadora(jugador, tablero);
+	if (posibleColumnaGanadora != -1)
+	{
+		printf("*elijo ganar*\n");
+		return posibleColumnaGanadora;
+	}
+	// Si no, voy a comprobar si mi oponente gana con el siguiente movimiento, para evitarlo
+	char oponente = obtener_oponente(jugador);
+	int posibleColumnaGanadoraDeOponente = obtener_columna_ganadora(oponente, tablero);
+	if (posibleColumnaGanadoraDeOponente != -1)
+	{
+		printf("*elijo evitar que mi oponente gane*\n");
+		return posibleColumnaGanadoraDeOponente;
+	}
+	// En caso de que nadie pueda ganar en el siguiente movimiento, buscaré en dónde se obtiene el mayor
+	// puntaje al colocar la pieza
+	ConteoConColumna conteoConColumnaJugador = obtener_columna_en_la_que_se_obtiene_mayor_puntaje(jugador, tablero);
+	ConteoConColumna conteoConColumnaOponente = obtener_columna_en_la_que_se_obtiene_mayor_puntaje(oponente, tablero);
+	if (conteoConColumnaOponente.conteo > conteoConColumnaJugador.conteo)
+	{
+		printf("*elijo quitarle el puntaje a mi oponente*\n");
+		return conteoConColumnaOponente.columna;
+	}
+	else if (conteoConColumnaJugador.conteo > 1)
+	{
+		printf("*elijo colocarla en donde obtengo un mayor puntaje*\n");
+		return conteoConColumnaJugador.columna;
+	}
+	// Si no, regresar la central por si está desocupada
+
+	int columnaCentral = obtener_columna_central(jugador, tablero);
+	if (columnaCentral != -1)
+	{
+		printf("*elijo ponerla en el centro*\n");
+		return columnaCentral;
+	}
+	// Finalmente, devolver la primera disponible de manera aleatoria
+	int columna = obtener_columna_aleatoria(jugador, tablero);
+	if (columna != -1)
+	{
+		printf("*elijo la primera vacía aleatoria*\n");
+		return columna;
+	}
+	printf("Esto no debería suceder\n");
+	return 0;
+}
 int main()
 {
-	string nick = solicitar_nick_y_crear_archivos();
+	//string nick = solicitar_nick_y_crear_archivos();
+	string nick = "Luis";
 	auto configuracion = obtener_configuracion_tablero(nick);
-	int x = 10, y = 10;
 	auto tablero = inicializarTablero(configuracion);
-	imprimir_tablero(tablero);
-	int columna = solicitar_columna(configuracion.columnas, tablero);
-	tablero = colocar_pieza(columna, tablero, CPU);
-	tablero = colocar_pieza(2, tablero, CPU);
-	tablero = colocar_pieza(5, tablero, CPU);
-	imprimir_tablero(tablero);
-	ConteoConColumna mejor = obtener_columna_en_la_que_se_obtiene_mayor_puntaje(CPU, tablero);
-	cout << endl
-		 << endl
-		 << obtener_columna_central(CPU, tablero);
+	int jugadorActual = JUGADOR_HUMANO;
+	int conteoParaNoHacerCicloInfinito = 0;
+	while (conteoParaNoHacerCicloInfinito < 10)
+	{
+		imprimir_tablero(tablero);
+		int columna;
+		if (jugadorActual == JUGADOR_HUMANO)
+		{
+			cout << "Humano. Elige: " << endl;
+			columna = solicitar_columna(tablero);
+		}
+		else
+		{
+			cout << "CPU, elige:" << endl;
+			columna = elegir_mejor_columna(jugadorActual, tablero);
+		}
+		tablero = colocar_pieza(columna, tablero, jugadorActual);
+		jugadorActual = obtener_oponente(jugadorActual);
+		conteoParaNoHacerCicloInfinito++;
+	}
 }

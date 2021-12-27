@@ -8,4 +8,11 @@ run:
 	# Compilando 
 	${GPP} ${MAIN} -o ${OUTPUT_FILE}.exe
 	# Ejecutando
+	./${OUTPUT_FILE}
+
+entrada:
+	# Compilando 
+	${GPP} ${MAIN} -o ${OUTPUT_FILE}.exe
+	# Ejecutando
 	./${OUTPUT_FILE} < ${INPUT_FILE}
+

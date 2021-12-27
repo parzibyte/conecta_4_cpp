@@ -19,6 +19,11 @@ struct ConfiguracionTablero
 	int columnas, filas;
 };
 
+struct ConteoConColumna
+{
+	int conteo, columna;
+};
+
 string solicitar_nick()
 {
 	string nombre;
@@ -332,6 +337,66 @@ int obtener_columna_ganadora_para_cpu(vector<vector<char>> tablero)
 	}
 	return -1;
 }
+int obtener_primera_fila_llena(int columna, vector<vector<char>> tablero)
+{
+	int i;
+	for (i = 0; i < tablero.size(); ++i)
+	{
+		if (tablero[i][columna] != ESPACIO_VACIO)
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+ConteoConColumna obtener_columna_en_la_que_se_obtiene_mayor_puntaje(char jugador, vector<vector<char>> tableroOriginal)
+{
+	ConteoConColumna conteoConCoordenada{0, -1};
+	vector<vector<char>> tablero = tableroOriginal;
+	int x, conteo;
+	for (x = 0; x < tablero[0].size(); ++x)
+	{
+		tablero = tableroOriginal;
+
+		if (obtener_primera_fila_vacia(x, tablero) != -1)
+		{
+			tablero = colocar_pieza(x, tablero, jugador);
+			int fila_pieza_recien_colocada = obtener_primera_fila_llena(x, tablero);
+			if (fila_pieza_recien_colocada != -1)
+			{
+				int y;
+				for (y = fila_pieza_recien_colocada; y < tablero.size(); y++)
+				{
+					conteo = contarArriba(x, y, jugador, tablero);
+					if (conteo > conteoConCoordenada.conteo)
+					{
+						conteoConCoordenada.conteo = conteo;
+						conteoConCoordenada.columna = x;
+					}
+					conteo = contarArribaDerecha(x, y, jugador, tablero);
+					if (conteo > conteoConCoordenada.conteo)
+					{
+						conteoConCoordenada.conteo = conteo;
+						conteoConCoordenada.columna = x;
+					}
+					conteo = contarDerecha(x, y, jugador, tablero);
+					if (conteo > conteoConCoordenada.conteo)
+					{
+						conteoConCoordenada.conteo = conteo;
+						conteoConCoordenada.columna = x;
+					}
+					conteo = contarAbajoDerecha(x, y, jugador, tablero);
+					if (conteo > conteoConCoordenada.conteo)
+					{
+						conteoConCoordenada.conteo = conteo;
+						conteoConCoordenada.columna = x;
+					}
+				}
+			}
+		}
+	}
+	return conteoConCoordenada;
+}
 int main()
 {
 	string nick = solicitar_nick_y_crear_archivos();
@@ -341,11 +406,12 @@ int main()
 	imprimir_tablero(tablero);
 	int columna = solicitar_columna(configuracion.columnas, tablero);
 	tablero = colocar_pieza(columna, tablero, CPU);
-	tablero = colocar_pieza(3, tablero, CPU);
-	tablero = colocar_pieza(3, tablero, CPU);
+	tablero = colocar_pieza(2, tablero, CPU);
+	tablero = colocar_pieza(5, tablero, CPU);
 	imprimir_tablero(tablero);
+	ConteoConColumna mejor = obtener_columna_en_la_que_se_obtiene_mayor_puntaje(CPU, tablero);
 	cout << endl
 		 << endl
-		 << obtener_columna_ganadora_para_cpu(tablero);
+		 << "Conteo de " << mejor.conteo << " con columna " << mejor.columna;
 	//imprimir_tablero(tablero);
 }

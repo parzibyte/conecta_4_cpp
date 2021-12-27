@@ -8,8 +8,10 @@ const string ARCHIVO_RANKING = "ranking.txt",
 			 RESULTADO_GANA = "g",
 			 RESULTADO_PIERDE = "p";
 const int COLUMNAS_DEFECTO = 10,
-		  FILAS_DEFECTO = 10, JUGADOR = 1, CPU = 2;
-const char ESPACIO_VACIO = ' ';
+		  FILAS_DEFECTO = 10;
+const char ESPACIO_VACIO = ' ',
+		   JUGADOR = 'X',
+		   CPU = 'O';
 
 struct ConfiguracionTablero
 {
@@ -112,6 +114,7 @@ vector<vector<char>> inicializarTablero(ConfiguracionTablero configuracion)
 
 void imprimir_tablero(vector<vector<char>> tablero)
 {
+	cout << endl; //TODO: quitar antes de entregar
 	int y, x;
 	const int filas = tablero.size(),
 			  columnas = tablero.at(0).size();
@@ -151,6 +154,45 @@ void imprimir_tablero(vector<vector<char>> tablero)
 	}
 	cout << endl;
 }
+int obtener_primera_fila_vacia(int columna, vector<vector<char>> tablero)
+{
+	int i;
+	for (i = tablero.size() - 1; i >= 0; i--)
+	{
+		if (tablero[i][columna] == ESPACIO_VACIO)
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+int solicitar_columna(int columnas, vector<vector<char>> tablero)
+{
+	while (true)
+	{
+		cout << "Seleccione columna para su tirada: ";
+		int columna;
+		cin >> columna;
+		if (columna >= 0 && columna <= columnas - 1)
+		{
+			return columna;
+		}
+		else if (!obtener_primera_fila_vacia(columna, tablero))
+		{
+			cout << "No hay filas vacías en esta columna";
+		}
+		else
+		{
+			cout << "Columna inválida";
+		}
+	}
+}
+
+vector<vector<char>> colocar_pieza(int columna, vector<vector<char>> tablero, char jugador)
+{
+	tablero[obtener_primera_fila_vacia(columna, tablero)][columna] = jugador;
+	return tablero;
+}
 
 int main()
 {
@@ -158,6 +200,8 @@ int main()
 	auto configuracion = obtener_configuracion_tablero(nick);
 	int x = 10, y = 10;
 	auto tablero = inicializarTablero(configuracion);
-	cout << endl;
+	imprimir_tablero(tablero);
+	int columna = solicitar_columna(configuracion.columnas, tablero);
+	tablero = colocar_pieza(columna, tablero, JUGADOR);
 	imprimir_tablero(tablero);
 }

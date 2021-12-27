@@ -1,6 +1,8 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <stdlib.h> // rand y RAND_MAX
+#include <unistd.h> // getpid
 
 using namespace std;
 const string ARCHIVO_RANKING = "ranking.txt",
@@ -397,6 +399,31 @@ ConteoConColumna obtener_columna_en_la_que_se_obtiene_mayor_puntaje(char jugador
 	}
 	return conteoConCoordenada;
 }
+int aleatorio_en_rango(int minimo, int maximo)
+{
+	// Asegurarnos de invocar a srand una vez
+	static bool primeraVez = true;
+	if (primeraVez)
+	{
+		srand(getpid());
+		primeraVez = false;
+	}
+	return minimo + rand() / (RAND_MAX / (maximo - minimo + 1) + 1);
+}
+
+int obtener_columna_aleatoria(char jugador, vector<vector<char>> tableroOriginal)
+{
+	vector<vector<char>> tablero;
+	while (1)
+	{
+		tablero = tableroOriginal;
+		int columna = aleatorio_en_rango(0, tablero[0].size() - 1);
+		if (obtener_primera_fila_vacia(columna, tablero))
+		{
+			return columna;
+		}
+	}
+}
 int main()
 {
 	string nick = solicitar_nick_y_crear_archivos();
@@ -412,6 +439,7 @@ int main()
 	ConteoConColumna mejor = obtener_columna_en_la_que_se_obtiene_mayor_puntaje(CPU, tablero);
 	cout << endl
 		 << endl
-		 << "Conteo de " << mejor.conteo << " con columna " << mejor.columna;
-	//imprimir_tablero(tablero);
+		 << obtener_columna_aleatoria(CPU, tablero);
+	cout << "-------" << endl;
+	imprimir_tablero(tablero);
 }

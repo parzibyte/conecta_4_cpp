@@ -11,6 +11,8 @@ const string ARCHIVO_RANKING = "ranking.txt",
 			 RESULTADO_PIERDE = "p";
 const int COLUMNAS_DEFECTO = 10,
 		  FILAS_DEFECTO = 10,
+		  MAXIMO_NUMERO_COLUMNAS = 10,
+		  MAXIMO_NUMERO_FILAS = 10,
 		  FICHAS_JUNTAS_NECESARIAS_PARA_GANAR = 4;
 const char ESPACIO_VACIO = ' ',
 		   JUGADOR_HUMANO = 'X',
@@ -601,10 +603,8 @@ bool esEmpate(vector<vector<char>> tablero)
 	}
 	return true;
 }
-void jugar()
+void jugar(string nick)
 {
-	//string nick = solicitar_nick_y_crear_archivos();
-	string nick = "Luis"; //TODO: remover después
 	auto configuracion = obtener_configuracion_tablero(nick);
 	auto tablero = inicializarTablero(configuracion);
 	int jugadorActual = JUGADOR_HUMANO;
@@ -639,8 +639,83 @@ void jugar()
 		jugadorActual = obtener_oponente(jugadorActual);
 	}
 }
+void visualizar_configuracion_del_tablero(string nick)
+{
+	ConfiguracionTablero configuracion = obtener_configuracion_tablero(nick);
+	cout << "La configuracion para '"
+		 << nick << "' es un tablero de "
+		 << configuracion.columnas << " columnas y "
+		 << configuracion.filas << " filas" << endl;
+}
+
+void solicitar_nueva_configuracion_tablero_y_guardar(string nick)
+{
+	int filas, columnas;
+	while (true)
+	{
+		cout << "Ingresa las filas: " << endl;
+		cin >> filas;
+		if (filas > 0 && filas <= MAXIMO_NUMERO_FILAS)
+		{
+			break;
+		}
+		else
+		{
+			cout << "Numero de filas no valido. Intenta de nuevo" << endl;
+		}
+	}
+	while (true)
+	{
+		cout << "Ingresa las columnas: " << endl;
+		cin >> columnas;
+		if (columnas > 0 && columnas <= MAXIMO_NUMERO_COLUMNAS)
+		{
+			break;
+		}
+		else
+		{
+			cout << "Numero de columnas no valido. Intenta de nuevo" << endl;
+		}
+	}
+	cambiar_configuracion(nick, ConfiguracionTablero{columnas, filas});
+	cout << "Se ha guardado la configuracion" << endl;
+}
 
 int main()
 {
-	jugar();
+	string nick = solicitar_nick_y_crear_archivos();
+	int eleccion = 0;
+	while (eleccion != 7)
+	{
+		cout << "1. Visualizar configuracion del tablero" << endl;
+		cout << "2. Cambiar configuracion del tablero" << endl;
+		cout << "3. Ver estadisticas" << endl;
+		cout << "4. Reproducir ultima partida" << endl;
+		cout << "5. Mostrar top 10" << endl;
+		cout << "6. Jugar partida" << endl;
+		cout << "7. Salir" << endl;
+		cout << "Elige [1-7]: " << endl;
+		cin >> eleccion;
+		if (eleccion == 1)
+		{
+			visualizar_configuracion_del_tablero(nick);
+		}
+		else if (eleccion == 2)
+		{
+			solicitar_nueva_configuracion_tablero_y_guardar(nick);
+		}
+		else if (eleccion == 3)
+		{
+		}
+		else if (eleccion == 4)
+		{
+		}
+		else if (eleccion == 5)
+		{
+		}
+		else if (eleccion == 6)
+		{
+			jugar(nick);
+		}
+	}
 }

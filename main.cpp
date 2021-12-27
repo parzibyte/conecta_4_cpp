@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <vector>
 
 using namespace std;
 const string ARCHIVO_RANKING = "ranking.txt",
@@ -8,6 +9,7 @@ const string ARCHIVO_RANKING = "ranking.txt",
 			 RESULTADO_PIERDE = "p";
 const int COLUMNAS_DEFECTO = 10,
 		  FILAS_DEFECTO = 10, JUGADOR = 1, CPU = 2;
+const char ESPACIO_VACIO = ' ';
 
 struct ConfiguracionTablero
 {
@@ -92,12 +94,70 @@ ConfiguracionTablero obtener_configuracion_tablero(string nick)
 	return configuracion;
 }
 
+vector<vector<char>> inicializarTablero(ConfiguracionTablero configuracion)
+{
+	vector<vector<char>> tablero;
+	int x, y;
+	for (y = 0; y < configuracion.filas; y++)
+	{
+		vector<char> fila;
+		tablero.push_back(fila);
+		for (x = 0; x < configuracion.columnas; x++)
+		{
+			tablero.at(y).push_back(ESPACIO_VACIO);
+		}
+	}
+	return tablero;
+}
+
+void imprimir_tablero(vector<vector<char>> tablero)
+{
+	int y, x;
+	const int filas = tablero.size(),
+			  columnas = tablero.at(0).size();
+	// Tablero
+	for (y = 0; y < filas; y++)
+	{
+		for (x = 0; x < columnas; x++)
+		{
+			char actual = tablero[y][x];
+			cout << "|" << actual;
+			if (x + 1 >= columnas)
+			{
+				cout << "|";
+			}
+		}
+		cout << endl;
+	}
+
+	// Imprimir pie
+	// Imprimir pie
+	for (x = 0; x < columnas; ++x)
+	{
+		cout << "+-";
+		if (x + 1 >= columnas)
+		{
+			cout << "+";
+		}
+	}
+	cout << endl;
+	for (x = 0; x < columnas; ++x)
+	{
+		cout << "|" << x;
+		if (x + 1 >= columnas)
+		{
+			cout << "|";
+		}
+	}
+	cout << endl;
+}
+
 int main()
 {
 	string nick = solicitar_nick_y_crear_archivos();
 	auto configuracion = obtener_configuracion_tablero(nick);
-	cout << "Filas: " << configuracion.filas << " Columnas :" << configuracion.columnas;
-	cambiar_configuracion(nick, ConfiguracionTablero{12, 34});
-	configuracion = obtener_configuracion_tablero(nick);
-	cout << "Después de cambiar\nFilas: " << configuracion.filas << " Columnas :" << configuracion.columnas;
+	int x = 10, y = 10;
+	auto tablero = inicializarTablero(configuracion);
+	cout << endl;
+	imprimir_tablero(tablero);
 }

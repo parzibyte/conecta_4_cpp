@@ -181,17 +181,17 @@ int solicitar_columna(vector<vector<char>> tablero)
 		cout << "Seleccione columna para su tirada: ";
 		int columna;
 		cin >> columna;
-		if (columna >= 0 && columna <= tablero[0].size() - 1)
+		if (columna >= 0 && columna <= tablero[0].size() - 1 && obtener_primera_fila_vacia(columna, tablero) != -1)
 		{
 			return columna;
 		}
 		else if (obtener_primera_fila_vacia(columna, tablero) == -1)
 		{
-			cout << "No hay filas vacías en esta columna";
+			cout << "No hay filas vacias en esta columna" << endl;
 		}
 		else
 		{
-			cout << "Columna inválida";
+			cout << "Columna inválida" << endl;
 		}
 	}
 }
@@ -616,6 +616,7 @@ void jugar()
 		{
 			cout << "Humano. Elige: " << endl;
 			columna = solicitar_columna(tablero);
+			cout << "El humano elige la columna " << columna << endl;
 		}
 		else
 		{

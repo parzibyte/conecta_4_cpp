@@ -366,6 +366,7 @@ bool jugador_gana(char jugador, vector<vector<char>> tablero)
  * Derecha
  * Arriba derecha
  * Abajo derecha
+ * Las demás direcciones son útiles para cuando se elige a la columna ganadora
  *
  * */
 	int y;
@@ -587,18 +588,30 @@ int elegir_mejor_columna(char jugador, vector<vector<char>> tablero)
 	printf("Esto no debería suceder\n");
 	return 0;
 }
-int main()
+
+bool esEmpate(vector<vector<char>> tablero)
+{
+	int i;
+	for (i = 0; i < tablero[0].size(); ++i)
+	{
+		if (obtener_primera_fila_vacia(i, tablero) != -1)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+void jugar()
 {
 	//string nick = solicitar_nick_y_crear_archivos();
-	string nick = "Luis";
+	string nick = "Luis"; //TODO: remover después
 	auto configuracion = obtener_configuracion_tablero(nick);
 	auto tablero = inicializarTablero(configuracion);
 	int jugadorActual = JUGADOR_HUMANO;
-	int conteoParaNoHacerCicloInfinito = 0;
-	while (conteoParaNoHacerCicloInfinito < 100)
+	int columna;
+	while (true)
 	{
 		imprimir_tablero(tablero);
-		int columna;
 		if (jugadorActual == JUGADOR_HUMANO)
 		{
 			cout << "Humano. Elige: " << endl;
@@ -610,23 +623,23 @@ int main()
 			columna = elegir_mejor_columna(jugadorActual, tablero);
 		}
 		tablero = colocar_pieza(columna, tablero, jugadorActual);
+		if (jugador_gana(jugadorActual, tablero))
+		{
+			imprimir_tablero(tablero);
+			cout << "El jugador " << jugadorActual << " gana" << endl;
+			break;
+		}
+		else if (esEmpate(tablero))
+		{
+			imprimir_tablero(tablero);
+			cout << "Empate" << endl;
+			break;
+		}
 		jugadorActual = obtener_oponente(jugadorActual);
-		conteoParaNoHacerCicloInfinito++;
 	}
-	/*
-	tablero = colocar_pieza(0, tablero, JUGADOR_HUMANO);
-	tablero = colocar_pieza(1, tablero, JUGADOR_HUMANO);
-	tablero = colocar_pieza(1, tablero, JUGADOR_HUMANO);
-	tablero = colocar_pieza(2, tablero, JUGADOR_HUMANO);
-	tablero = colocar_pieza(2, tablero, JUGADOR_HUMANO);
-	tablero = colocar_pieza(2, tablero, JUGADOR_HUMANO);
-	tablero = colocar_pieza(3, tablero, JUGADOR_HUMANO);
-	tablero = colocar_pieza(3, tablero, JUGADOR_HUMANO);
-	tablero = colocar_pieza(3, tablero, JUGADOR_HUMANO);
-	tablero = colocar_pieza(3, tablero, JUGADOR_HUMANO);
-	imprimir_tablero(tablero);
-	cout << contarAbajoIzquierda(3, 4, JUGADOR_HUMANO, tablero) << endl;
-	cout << contarAbajoIzquierda(4, 3, JUGADOR_HUMANO, tablero) << endl;
-	cout << contarAbajoIzquierda(0, 0, JUGADOR_HUMANO, tablero) << endl;
-*/
+}
+
+int main()
+{
+	jugar();
 }

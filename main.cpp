@@ -8,7 +8,8 @@ const string ARCHIVO_RANKING = "ranking.txt",
 			 RESULTADO_GANA = "g",
 			 RESULTADO_PIERDE = "p";
 const int COLUMNAS_DEFECTO = 10,
-		  FILAS_DEFECTO = 10;
+		  FILAS_DEFECTO = 10,
+		  FICHAS_JUNTAS_NECESARIAS_PARA_GANAR = 4;
 const char ESPACIO_VACIO = ' ',
 		   JUGADOR = 'X',
 		   CPU = 'O';
@@ -133,8 +134,7 @@ void imprimir_tablero(vector<vector<char>> tablero)
 		cout << endl;
 	}
 
-	// Imprimir pie
-	// Imprimir pie
+	// Imprimir línea de +--+--+--+
 	for (x = 0; x < columnas; ++x)
 	{
 		cout << "+-";
@@ -144,6 +144,7 @@ void imprimir_tablero(vector<vector<char>> tablero)
 		}
 	}
 	cout << endl;
+	// Y los números
 	for (x = 0; x < columnas; ++x)
 	{
 		cout << "|" << x;
@@ -177,7 +178,7 @@ int solicitar_columna(int columnas, vector<vector<char>> tablero)
 		{
 			return columna;
 		}
-		else if (!obtener_primera_fila_vacia(columna, tablero))
+		else if (obtener_primera_fila_vacia(columna, tablero) == -1)
 		{
 			cout << "No hay filas vacías en esta columna";
 		}
@@ -190,10 +191,147 @@ int solicitar_columna(int columnas, vector<vector<char>> tablero)
 
 vector<vector<char>> colocar_pieza(int columna, vector<vector<char>> tablero, char jugador)
 {
+	//TODO: tal vez aquí registrar la partida
 	tablero[obtener_primera_fila_vacia(columna, tablero)][columna] = jugador;
 	return tablero;
 }
 
+int contarArriba(int x, int y, char jugador, vector<vector<char>> tablero)
+{
+	int yInicio = (y - FICHAS_JUNTAS_NECESARIAS_PARA_GANAR >= 0) ? y - FICHAS_JUNTAS_NECESARIAS_PARA_GANAR + 1 : 0;
+	int contador = 0;
+	for (; yInicio <= y; yInicio++)
+	{
+		if (tablero[yInicio][x] == jugador)
+		{
+			contador++;
+		}
+		else
+		{
+			contador = 0;
+		}
+	}
+	return contador;
+}
+
+int contarDerecha(int x, int y, char jugador, vector<vector<char>> tablero)
+{
+	int xFin = (x + FICHAS_JUNTAS_NECESARIAS_PARA_GANAR < tablero[0].size()) ? x + FICHAS_JUNTAS_NECESARIAS_PARA_GANAR - 1 : tablero[0].size() - 1;
+	int contador = 0;
+	for (; x <= xFin; x++)
+	{
+		if (tablero[y][x] == jugador)
+		{
+			contador++;
+		}
+		else
+		{
+			contador = 0;
+		}
+	}
+	return contador;
+}
+
+int contarArribaDerecha(int x, int y, char jugador, vector<vector<char>> tablero)
+{
+	int xFin = (x + FICHAS_JUNTAS_NECESARIAS_PARA_GANAR < tablero[0].size()) ? x + FICHAS_JUNTAS_NECESARIAS_PARA_GANAR - 1 : tablero[0].size() - 1;
+	int yInicio = (y - tablero[0].size() >= 0) ? y - FICHAS_JUNTAS_NECESARIAS_PARA_GANAR + 1 : 0;
+	int contador = 0;
+	while (x <= xFin && yInicio <= y)
+	{
+		if (tablero[y][x] == jugador)
+		{
+			contador++;
+		}
+		else
+		{
+			contador = 0;
+		}
+		x++;
+		y--;
+	}
+	return contador;
+}
+
+int contarAbajoDerecha(int x, int y, char jugador, vector<vector<char>> tablero)
+{
+	int xFin = (x + FICHAS_JUNTAS_NECESARIAS_PARA_GANAR < tablero[0].size()) ? x + FICHAS_JUNTAS_NECESARIAS_PARA_GANAR - 1 : tablero[0].size() - 1;
+	int yFin = (y + FICHAS_JUNTAS_NECESARIAS_PARA_GANAR < tablero.size()) ? y + FICHAS_JUNTAS_NECESARIAS_PARA_GANAR - 1 : tablero.size() - 1;
+	int contador = 0;
+	while (x <= xFin && y <= yFin)
+	{
+		if (tablero[y][x] == jugador)
+		{
+			contador++;
+		}
+		else
+		{
+			contador = 0;
+		}
+		x++;
+		y++;
+	}
+	return contador;
+}
+
+bool jugador_gana(char jugador, vector<vector<char>> tablero)
+{
+	/*
+ * Solo necesitamos
+ * Arriba
+ * Derecha
+ * Arriba derecha
+ * Abajo derecha
+ *
+ * */
+	int y;
+	for (y = 0; y < tablero.size(); y++)
+	{
+		int x;
+		for (x = 0; x < tablero[y].size(); x++)
+		{
+			if (contarArriba(x, y, jugador, tablero) >= FICHAS_JUNTAS_NECESARIAS_PARA_GANAR)
+			{
+				return true;
+			}
+
+			if (contarDerecha(x, y, jugador, tablero) >= FICHAS_JUNTAS_NECESARIAS_PARA_GANAR)
+			{
+				return true;
+			}
+
+			if (contarArribaDerecha(x, y, jugador, tablero) >= FICHAS_JUNTAS_NECESARIAS_PARA_GANAR)
+			{
+				return true;
+			}
+			if (contarAbajoDerecha(x, y, jugador, tablero) >= FICHAS_JUNTAS_NECESARIAS_PARA_GANAR)
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+int obtener_columna_ganadora_para_cpu(vector<vector<char>> tablero)
+{
+	vector<vector<char>> tablero_original;
+	tablero_original = tablero;
+	int i;
+	for (i = 0; i < tablero[0].size(); i++)
+	{
+		tablero = tablero_original;
+		if (obtener_primera_fila_vacia(i, tablero) != -1)
+		{
+			tablero = colocar_pieza(i, tablero, CPU);
+			if (jugador_gana(CPU, tablero))
+			{
+				return i;
+			}
+		}
+	}
+	return -1;
+}
 int main()
 {
 	string nick = solicitar_nick_y_crear_archivos();
@@ -202,6 +340,12 @@ int main()
 	auto tablero = inicializarTablero(configuracion);
 	imprimir_tablero(tablero);
 	int columna = solicitar_columna(configuracion.columnas, tablero);
-	tablero = colocar_pieza(columna, tablero, JUGADOR);
+	tablero = colocar_pieza(columna, tablero, CPU);
+	tablero = colocar_pieza(3, tablero, CPU);
+	tablero = colocar_pieza(3, tablero, CPU);
 	imprimir_tablero(tablero);
+	cout << endl
+		 << endl
+		 << obtener_columna_ganadora_para_cpu(tablero);
+	//imprimir_tablero(tablero);
 }

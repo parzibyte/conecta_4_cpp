@@ -543,6 +543,7 @@ char obtener_oponente(char jugador)
 }
 int elegir_mejor_columna(char jugador, vector<vector<char>> tablero)
 {
+	return 0;
 	// Voy a comprobar si puedo ganar...
 	int posibleColumnaGanadora = obtener_columna_ganadora(jugador, tablero);
 	if (posibleColumnaGanadora != -1)
@@ -603,12 +604,21 @@ bool esEmpate(vector<vector<char>> tablero)
 	}
 	return true;
 }
+void guardarPartidaTerminada(string nick, string resultado, int movimientos)
+{
+	ofstream archivo;
+	archivo.open(nombre_archivo_resultados(nick), ios_base::app);
+	archivo << resultado << "," << movimientos;
+	archivo << endl;
+	archivo.close();
+}
 void jugar(string nick)
 {
 	auto configuracion = obtener_configuracion_tablero(nick);
 	auto tablero = inicializarTablero(configuracion);
 	int jugadorActual = JUGADOR_HUMANO;
 	int columna;
+	int movimientos = 0;
 	while (true)
 	{
 		imprimir_tablero(tablero);
@@ -617,6 +627,7 @@ void jugar(string nick)
 			cout << "Humano. Elige: " << endl;
 			columna = solicitar_columna(tablero);
 			cout << "El humano elige la columna " << columna << endl;
+			movimientos++;
 		}
 		else
 		{
@@ -628,12 +639,24 @@ void jugar(string nick)
 		{
 			imprimir_tablero(tablero);
 			cout << "El jugador " << jugadorActual << " gana" << endl;
+			if (jugadorActual == JUGADOR_HUMANO)
+			{
+				guardarPartidaTerminada(nick, RESULTADO_GANA, movimientos);
+			}
+			else
+			{
+				guardarPartidaTerminada(nick, RESULTADO_PIERDE, movimientos);
+			}
 			break;
 		}
 		else if (esEmpate(tablero))
 		{
 			imprimir_tablero(tablero);
 			cout << "Empate" << endl;
+			if (jugadorActual == JUGADOR_HUMANO)
+			{
+				guardarPartidaTerminada(nick, RESULTADO_EMPATE, movimientos);
+			}
 			break;
 		}
 		jugadorActual = obtener_oponente(jugadorActual);

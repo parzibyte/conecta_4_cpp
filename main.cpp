@@ -150,7 +150,7 @@ vector<vector<char> > inicializarTablero(ConfiguracionTablero configuracion)
 
 void imprimir_tablero(vector<vector<char> > tablero)
 {
-	cout << endl; //TODO: quitar antes de entregar
+	cout << endl;
 	int y, x;
 	const int filas = tablero.size(),
 			  columnas = tablero.at(0).size();
@@ -226,7 +226,6 @@ int solicitar_columna(vector<vector<char> > tablero)
 
 vector<vector<char> > colocar_pieza(int columna, vector<vector<char> > tablero, char jugador)
 {
-	//TODO: tal vez aquí registrar la partida
 	tablero[obtener_primera_fila_vacia(columna, tablero)][columna] = jugador;
 	return tablero;
 }
@@ -571,11 +570,12 @@ char obtener_oponente(char jugador)
 }
 int elegir_mejor_columna(char jugador, vector<vector<char> > tablero)
 {
+	return 0;
 	// Voy a comprobar si puedo ganar...
 	int posibleColumnaGanadora = obtener_columna_ganadora(jugador, tablero);
 	if (posibleColumnaGanadora != -1)
 	{
-		printf("*elijo ganar*\n");
+		cout << "*elijo ganar*\n";
 		return posibleColumnaGanadora;
 	}
 	// Si no, voy a comprobar si mi oponente gana con el siguiente movimiento, para evitarlo
@@ -583,7 +583,7 @@ int elegir_mejor_columna(char jugador, vector<vector<char> > tablero)
 	int posibleColumnaGanadoraDeOponente = obtener_columna_ganadora(oponente, tablero);
 	if (posibleColumnaGanadoraDeOponente != -1)
 	{
-		printf("*elijo evitar que mi oponente gane*\n");
+		cout << "*elijo evitar que mi oponente gane*\n";
 		return posibleColumnaGanadoraDeOponente;
 	}
 	// En caso de que nadie pueda ganar en el siguiente movimiento, buscaré en dónde se obtiene el mayor
@@ -592,12 +592,12 @@ int elegir_mejor_columna(char jugador, vector<vector<char> > tablero)
 	ConteoConColumna conteoConColumnaOponente = obtener_columna_en_la_que_se_obtiene_mayor_puntaje(oponente, tablero);
 	if (conteoConColumnaOponente.conteo > conteoConColumnaJugador.conteo)
 	{
-		printf("*elijo quitarle el puntaje a mi oponente*\n");
+		cout << "*elijo quitarle el puntaje a mi oponente*\n";
 		return conteoConColumnaOponente.columna;
 	}
 	else if (conteoConColumnaJugador.conteo > 1)
 	{
-		printf("*elijo colocarla en donde obtengo un mayor puntaje*\n");
+		cout << "*elijo colocarla en donde obtengo un mayor puntaje*\n";
 		return conteoConColumnaJugador.columna;
 	}
 	// Si no, regresar la central por si está desocupada
@@ -605,17 +605,17 @@ int elegir_mejor_columna(char jugador, vector<vector<char> > tablero)
 	int columnaCentral = obtener_columna_central(jugador, tablero);
 	if (columnaCentral != -1)
 	{
-		printf("*elijo ponerla en el centro*\n");
+		cout << "*elijo ponerla en el centro*\n";
 		return columnaCentral;
 	}
 	// Finalmente, devolver la primera disponible de manera aleatoria
 	int columna = obtener_columna_aleatoria(jugador, tablero);
 	if (columna != -1)
 	{
-		printf("*elijo la primera vacía aleatoria*\n");
+		cout << "*elijo la primera vacía aleatoria*\n";
 		return columna;
 	}
-	printf("Esto no debería suceder\n");
+	cout << "Esto no debería suceder\n";
 	return 0;
 }
 
@@ -670,11 +670,11 @@ vector<Movimiento> obtener_movimientos_de_partida(string nick)
 	}
 	return movimientos;
 }
-void anunciar_victoria(char jugador)
+void anunciar_victoria(char jugador, string nick)
 {
 	if (jugador == JUGADOR_HUMANO)
 	{
-		cout << "El jugador gana la partida. Felicidades"
+		cout << nick << " gana la partida. Felicidades"
 			 << "\n";
 	}
 	else
@@ -692,7 +692,7 @@ void anunciar_empate()
 void jugar(string nick)
 {
 	ConfiguracionTablero configuracion = obtener_configuracion_tablero(nick);
-	vector<vector<char> > tablero = inicializarTablero(configuracion);
+	vector<vector<char>> tablero = inicializarTablero(configuracion);
 	int jugadorActual = JUGADOR_HUMANO;
 	int columna;
 	int conteo_movimientos = 0;
@@ -703,9 +703,9 @@ void jugar(string nick)
 		imprimir_tablero(tablero);
 		if (jugadorActual == JUGADOR_HUMANO)
 		{
-			cout << "Humano. Elige: " << endl;
+			cout << nick << ", elige: " << endl;
 			columna = solicitar_columna(tablero);
-			cout << "El humano elige la columna " << columna << endl;
+			cout << nick << " elige la columna " << columna << endl;
 			conteo_movimientos++;
 		}
 		else
@@ -720,7 +720,7 @@ void jugar(string nick)
 		if (jugador_gana(jugadorActual, tablero))
 		{
 			imprimir_tablero(tablero);
-			anunciar_victoria(jugadorActual);
+			anunciar_victoria(jugadorActual, nick);
 			if (jugadorActual == JUGADOR_HUMANO)
 			{
 				guardarPartidaTerminada(nick, RESULTADO_GANA, conteo_movimientos);
@@ -862,7 +862,7 @@ void repetir_ultima_partida(string nick)
 		imprimir_tablero(tablero);
 		if (jugador_gana(jugador, tablero))
 		{
-			anunciar_victoria(jugador);
+			anunciar_victoria(jugador, nick);
 		}
 		else if (esEmpate(tablero))
 		{

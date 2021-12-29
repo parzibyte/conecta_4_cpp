@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 #include <fstream>
 #include <vector>
 #include <stdlib.h> // rand y RAND_MAX
@@ -16,7 +17,8 @@ const int COLUMNAS_DEFECTO = 10,
 		  FICHAS_JUNTAS_NECESARIAS_PARA_GANAR = 4;
 const char ESPACIO_VACIO = ' ',
 		   JUGADOR_HUMANO = 'X',
-		   JUGADOR_CPU = 'O';
+		   JUGADOR_CPU = 'O',
+		   DELIMITADOR_RESULTADOS = ',';
 
 struct ConfiguracionTablero
 {
@@ -26,6 +28,12 @@ struct ConfiguracionTablero
 struct ConteoConColumna
 {
 	int conteo, columna;
+};
+
+struct EstadisticasDeJugador
+{
+	double partidas_ganadas = 0, partidas_perdidas = 0, empates = 0, total_movimientos = 0;
+	double porcentaje_ganadas, porcentaje_perdidas, porcentaje_empatadas, promedio_movimientos;
 };
 
 string solicitar_nick()
@@ -543,7 +551,6 @@ char obtener_oponente(char jugador)
 }
 int elegir_mejor_columna(char jugador, vector<vector<char>> tablero)
 {
-	return 0;
 	// Voy a comprobar si puedo ganar...
 	int posibleColumnaGanadora = obtener_columna_ganadora(jugador, tablero);
 	if (posibleColumnaGanadora != -1)
@@ -608,7 +615,7 @@ void guardarPartidaTerminada(string nick, string resultado, int movimientos)
 {
 	ofstream archivo;
 	archivo.open(nombre_archivo_resultados(nick), ios_base::app);
-	archivo << resultado << "," << movimientos;
+	archivo << resultado << DELIMITADOR_RESULTADOS << movimientos;
 	archivo << endl;
 	archivo.close();
 }
@@ -704,6 +711,48 @@ void solicitar_nueva_configuracion_tablero_y_guardar(string nick)
 	cout << "Se ha guardado la configuracion" << endl;
 }
 
+EstadisticasDeJugador obtener_estadisticas(string nick)
+{
+	EstadisticasDeJugador estadisticas;
+	ifstream archivo(nombre_archivo_resultados(nick));
+	string linea, resultado, movimientos;
+	while (getline(archivo, linea))
+	{
+		stringstream input_stringstream(linea);
+		getline(input_stringstream, resultado, DELIMITADOR_RESULTADOS);
+		getline(input_stringstream, movimientos, DELIMITADOR_RESULTADOS);
+		if (resultado == RESULTADO_EMPATE)
+		{
+			estadisticas.empates++;
+		}
+		else if (resultado == RESULTADO_GANA)
+		{
+			estadisticas.partidas_ganadas++;
+		}
+		else if (resultado == RESULTADO_PIERDE)
+		{
+			estadisticas.partidas_perdidas++;
+		}
+		estadisticas.total_movimientos += stoi(movimientos);
+	}
+	double total_partidas = estadisticas.partidas_ganadas + estadisticas.partidas_perdidas + estadisticas.empates;
+	estadisticas.porcentaje_ganadas = (estadisticas.partidas_ganadas * 100) / total_partidas;
+	estadisticas.porcentaje_perdidas = (estadisticas.partidas_perdidas * 100) / total_partidas;
+	estadisticas.porcentaje_empatadas = (estadisticas.empates * 100) / total_partidas;
+	estadisticas.promedio_movimientos = estadisticas.total_movimientos / total_partidas;
+	return estadisticas;
+}
+
+void ver_estadisticas(string nick)
+{
+	auto estadisticas = obtener_estadisticas(nick);
+	cout << "Mostrando estadisticas para " << nick << "\n";
+	cout << "Porcentaje de partidas ganadas: " << estadisticas.porcentaje_ganadas << " %\n";
+	cout << "Porcentaje de partidas perdidas: " << estadisticas.porcentaje_perdidas << " %\n";
+	cout << "Porcentaje de partidas empatadas: " << estadisticas.porcentaje_empatadas << " %\n";
+	cout << "Promedio de movimientos " << estadisticas.promedio_movimientos << "\n";
+}
+
 int main()
 {
 	string nick = solicitar_nick_y_crear_archivos();
@@ -729,6 +778,7 @@ int main()
 		}
 		else if (eleccion == 3)
 		{
+			ver_estadisticas(nick);
 		}
 		else if (eleccion == 4)
 		{

@@ -13,7 +13,8 @@ const int COLUMNAS_DEFECTO = 10,
 		  FILAS_DEFECTO = 10,
 		  MAXIMO_NUMERO_COLUMNAS = 10,
 		  MAXIMO_NUMERO_FILAS = 10,
-		  FICHAS_JUNTAS_NECESARIAS_PARA_GANAR = 4;
+		  FICHAS_JUNTAS_NECESARIAS_PARA_GANAR = 4,
+		  MAXIMO_JUGADORES_RANKING = 10;
 const char ESPACIO_VACIO = ' ',
 		   JUGADOR_HUMANO = 'X',
 		   JUGADOR_CPU = 'O',
@@ -908,8 +909,14 @@ void guardarJugadoresRanking(vector<JugadorParaRanking> jugadores)
 {
 	ofstream archivo;
 	archivo.open(ARCHIVO_RANKING.c_str(), fstream::out);
+	// Solo escribir [MAXIMO_JUGADORES_RANKING] jugadores
+	int verdaderoFin = MAXIMO_JUGADORES_RANKING;
+	if (jugadores.size() < verdaderoFin)
+	{
+		verdaderoFin = jugadores.size();
+	}
 	int i;
-	for (i = 0; i < jugadores.size(); i++)
+	for (i = 0; i < verdaderoFin; i++)
 	{
 		JugadorParaRanking jugador = jugadores[i];
 		archivo << jugador.nombre << DELIMITADOR_RANKING << jugador.puntuacion << DELIMITADOR_RANKING << jugador.movimientos << "\n";
@@ -931,6 +938,33 @@ int indiceDeJugador(vector<JugadorParaRanking> jugadores, string jugadorBuscado)
 	return -1;
 }
 
+vector<JugadorParaRanking> ordenar(vector<JugadorParaRanking> jugadores)
+{
+	int i, j;
+	for (i = 0; i < jugadores.size() - 1; i++)
+	{
+		for (j = i + 1; j < jugadores.size(); j++)
+		{
+			JugadorParaRanking jugadorActual = jugadores[i];
+			JugadorParaRanking jugadorDerecha = jugadores[j];
+			if (jugadorActual.puntuacion < jugadorDerecha.puntuacion)
+			{
+				jugadores[i] = jugadorDerecha;
+				jugadores[j] = jugadorActual;
+			}
+			else if (jugadorActual.puntuacion == jugadorDerecha.puntuacion)
+			{
+				if (jugadorActual.movimientos > jugadorDerecha.movimientos)
+				{
+					jugadores[i] = jugadorDerecha;
+					jugadores[j] = jugadorActual;
+				}
+			}
+		}
+	}
+	return jugadores;
+}
+
 void actualizarJugadorEnRanking(string nick)
 {
 	JugadorParaRanking jugador = calcular_puntaje(nick);
@@ -944,8 +978,12 @@ void actualizarJugadorEnRanking(string nick)
 	{
 		jugadores[posibleIndice] = jugador;
 	}
-	// Antes de aquí ordenar y cortar a 10
-	guardarJugadoresRanking(jugadores);
+	guardarJugadoresRanking(ordenar(jugadores));
+}
+
+void mostrarTop10()
+{
+	vector<JugadorParaRanking> jugadores = obtenerJugadoresRanking();
 }
 
 int main()

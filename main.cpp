@@ -18,8 +18,10 @@ const char ESPACIO_VACIO = ' ',
 		   JUGADOR_HUMANO = 'X',
 		   JUGADOR_CPU = 'O',
 		   DELIMITADOR_RESULTADOS = ',',
-		   DELIMITADOR_MOVIMIENTOS = ',';
+		   DELIMITADOR_MOVIMIENTOS = ',',
+		   DELIMITADOR_RANKING = ',';
 
+void actualizarJugadorEnRanking(string nick);
 struct ConfiguracionTablero
 {
 	int columnas, filas;
@@ -635,6 +637,7 @@ void guardarPartidaTerminada(string nick, string resultado, int movimientos)
 	archivo << resultado << DELIMITADOR_RESULTADOS << movimientos;
 	archivo << endl;
 	archivo.close();
+	actualizarJugadorEnRanking(nick);
 }
 void guardar_movimientos_de_partida(string nick, vector<Movimiento> movimientos)
 {
@@ -871,8 +874,78 @@ void repetir_ultima_partida(string nick)
 		 << "\n";
 }
 
-JugadorParaRanking calcular_puntaje(string nick){
-	EstadisticasDeJugador estadisticas=obtener_estadisticas(nick);
+JugadorParaRanking calcular_puntaje(string nick)
+{
+	EstadisticasDeJugador estadisticas = obtener_estadisticas(nick);
+	JugadorParaRanking jugador;
+	jugador.nombre = nick;
+	double total_partidas = estadisticas.partidas_ganadas + estadisticas.partidas_perdidas + estadisticas.empates;
+	jugador.puntuacion = (estadisticas.partidas_ganadas - estadisticas.partidas_perdidas) / total_partidas;
+	jugador.movimientos = estadisticas.promedio_movimientos;
+	return jugador;
+}
+
+vector<JugadorParaRanking> obtenerJugadoresRanking()
+{
+	vector<JugadorParaRanking> jugadores;
+	JugadorParaRanking jugadorParaRanking;
+	ifstream archivo(ARCHIVO_RANKING.c_str());
+	string linea, nombre, puntuacion, movimientos;
+	while (getline(archivo, linea))
+	{
+		stringstream input_stringstream(linea);
+		getline(input_stringstream, nombre, DELIMITADOR_RANKING);
+		getline(input_stringstream, puntuacion, DELIMITADOR_RANKING);
+		getline(input_stringstream, movimientos, DELIMITADOR_RANKING);
+		jugadorParaRanking.nombre = nombre;
+		jugadorParaRanking.puntuacion = atof(puntuacion.c_str());
+		jugadorParaRanking.movimientos = atof(movimientos.c_str());
+		jugadores.push_back(jugadorParaRanking);
+	}
+	return jugadores;
+}
+void guardarJugadoresRanking(vector<JugadorParaRanking> jugadores)
+{
+	ofstream archivo;
+	archivo.open(ARCHIVO_RANKING.c_str(), fstream::out);
+	int i;
+	for (i = 0; i < jugadores.size(); i++)
+	{
+		JugadorParaRanking jugador = jugadores[i];
+		archivo << jugador.nombre << DELIMITADOR_RANKING << jugador.puntuacion << DELIMITADOR_RANKING << jugador.movimientos << "\n";
+	}
+	archivo.close();
+}
+
+int indiceDeJugador(vector<JugadorParaRanking> jugadores, string jugadorBuscado)
+{
+	int i;
+	for (i = 0; i < jugadores.size(); i++)
+	{
+		JugadorParaRanking jugador = jugadores[i];
+		if (jugador.nombre == jugadorBuscado)
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
+void actualizarJugadorEnRanking(string nick)
+{
+	JugadorParaRanking jugador = calcular_puntaje(nick);
+	vector<JugadorParaRanking> jugadores = obtenerJugadoresRanking();
+	int posibleIndice = indiceDeJugador(jugadores, jugador.nombre);
+	if (posibleIndice == -1)
+	{
+		jugadores.push_back(jugador);
+	}
+	else
+	{
+		jugadores[posibleIndice] = jugador;
+	}
+	// Antes de aquí ordenar y cortar a 10
+	guardarJugadoresRanking(jugadores);
 }
 
 int main()

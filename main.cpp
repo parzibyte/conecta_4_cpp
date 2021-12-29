@@ -691,7 +691,7 @@ void anunciar_empate()
 void jugar(string nick)
 {
 	ConfiguracionTablero configuracion = obtener_configuracion_tablero(nick);
-	vector<vector<char>> tablero = inicializarTablero(configuracion);
+	vector<vector<char> > tablero = inicializarTablero(configuracion);
 	int jugadorActual = JUGADOR_HUMANO;
 	int columna;
 	int conteo_movimientos = 0;

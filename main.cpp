@@ -18,7 +18,8 @@ const int COLUMNAS_DEFECTO = 10,
 const char ESPACIO_VACIO = ' ',
 		   JUGADOR_HUMANO = 'X',
 		   JUGADOR_CPU = 'O',
-		   DELIMITADOR_RESULTADOS = ',';
+		   DELIMITADOR_RESULTADOS = ',',
+		   DELIMITADOR_MOVIMIENTOS = ',';
 
 struct ConfiguracionTablero
 {
@@ -34,6 +35,12 @@ struct EstadisticasDeJugador
 {
 	double partidas_ganadas = 0, partidas_perdidas = 0, empates = 0, total_movimientos = 0;
 	double porcentaje_ganadas, porcentaje_perdidas, porcentaje_empatadas, promedio_movimientos;
+};
+
+struct Movimiento
+{
+	char jugador;
+	int columna;
 };
 
 string solicitar_nick()
@@ -619,13 +626,64 @@ void guardarPartidaTerminada(string nick, string resultado, int movimientos)
 	archivo << endl;
 	archivo.close();
 }
+void guardar_movimientos_de_partida(string nick, vector<Movimiento> movimientos)
+{
+	ofstream archivo;
+	archivo.open(nombre_archivo_ultima_partida(nick), fstream::out);
+	int i;
+	for (i = 0; i < movimientos.size(); i++)
+	{
+		auto movimiento = movimientos[i];
+		archivo << movimiento.jugador << DELIMITADOR_MOVIMIENTOS << movimiento.columna << "\n";
+	}
+	archivo.close();
+}
+
+vector<Movimiento> obtener_movimientos_de_partida(string nick)
+{
+	vector<Movimiento> movimientos;
+	Movimiento movimiento;
+	ifstream archivo(nombre_archivo_ultima_partida(nick));
+	string linea, jugador, columna;
+	while (getline(archivo, linea))
+	{
+		stringstream input_stringstream(linea);
+		getline(input_stringstream, jugador, DELIMITADOR_MOVIMIENTOS);
+		getline(input_stringstream, columna, DELIMITADOR_MOVIMIENTOS);
+		movimiento.jugador = jugador[0];
+		movimiento.columna = stoi(columna);
+		movimientos.push_back(movimiento);
+	}
+	return movimientos;
+}
+void anunciar_victoria(char jugador)
+{
+	if (jugador == JUGADOR_HUMANO)
+	{
+		cout << "El jugador gana la partida. Felicidades"
+			 << "\n";
+	}
+	else
+	{
+		cout << "El CPU gana la partida. Felicidades"
+			 << "\n";
+	}
+}
+void anunciar_empate()
+{
+	cout << "El juego termina en empate "
+		 << "\n";
+}
+
 void jugar(string nick)
 {
 	auto configuracion = obtener_configuracion_tablero(nick);
 	auto tablero = inicializarTablero(configuracion);
 	int jugadorActual = JUGADOR_HUMANO;
 	int columna;
-	int movimientos = 0;
+	int conteo_movimientos = 0;
+	vector<Movimiento> movimientos;
+	Movimiento movimiento;
 	while (true)
 	{
 		imprimir_tablero(tablero);
@@ -634,7 +692,7 @@ void jugar(string nick)
 			cout << "Humano. Elige: " << endl;
 			columna = solicitar_columna(tablero);
 			cout << "El humano elige la columna " << columna << endl;
-			movimientos++;
+			conteo_movimientos++;
 		}
 		else
 		{
@@ -642,32 +700,36 @@ void jugar(string nick)
 			columna = elegir_mejor_columna(jugadorActual, tablero);
 		}
 		tablero = colocar_pieza(columna, tablero, jugadorActual);
+		movimiento.columna = columna;
+		movimiento.jugador = jugadorActual;
+		movimientos.push_back(movimiento);
 		if (jugador_gana(jugadorActual, tablero))
 		{
 			imprimir_tablero(tablero);
-			cout << "El jugador " << jugadorActual << " gana" << endl;
+			anunciar_victoria(jugadorActual);
 			if (jugadorActual == JUGADOR_HUMANO)
 			{
-				guardarPartidaTerminada(nick, RESULTADO_GANA, movimientos);
+				guardarPartidaTerminada(nick, RESULTADO_GANA, conteo_movimientos);
 			}
 			else
 			{
-				guardarPartidaTerminada(nick, RESULTADO_PIERDE, movimientos);
+				guardarPartidaTerminada(nick, RESULTADO_PIERDE, conteo_movimientos);
 			}
 			break;
 		}
 		else if (esEmpate(tablero))
 		{
 			imprimir_tablero(tablero);
-			cout << "Empate" << endl;
+			anunciar_empate();
 			if (jugadorActual == JUGADOR_HUMANO)
 			{
-				guardarPartidaTerminada(nick, RESULTADO_EMPATE, movimientos);
+				guardarPartidaTerminada(nick, RESULTADO_EMPATE, conteo_movimientos);
 			}
 			break;
 		}
 		jugadorActual = obtener_oponente(jugadorActual);
 	}
+	guardar_movimientos_de_partida(nick, movimientos);
 }
 void visualizar_configuracion_del_tablero(string nick)
 {
@@ -753,6 +815,45 @@ void ver_estadisticas(string nick)
 	cout << "Promedio de movimientos " << estadisticas.promedio_movimientos << "\n";
 }
 
+void repetir_ultima_partida(string nick)
+{
+	// Consumimos el último salto de línea que seguramente está en el búfer
+	getchar();
+	cout << "Repitiendo ultima partida guardada para '" << nick << "'"
+		 << "\n";
+	auto m = obtener_movimientos_de_partida(nick);
+	auto configuracion = obtener_configuracion_tablero(nick);
+	auto tablero = inicializarTablero(configuracion);
+	int i;
+	for (i = 0; i < m.size(); i++)
+	{
+		char jugador = m[i].jugador;
+		int columna = m[i].columna;
+		if (jugador == JUGADOR_HUMANO)
+		{
+			cout << "El jugador elige la columna " << columna << "\n";
+		}
+		else
+		{
+			cout << "El CPU elige la columna " << columna << "\n";
+		}
+		tablero = colocar_pieza(columna, tablero, jugador);
+		imprimir_tablero(tablero);
+		if (jugador_gana(jugador, tablero))
+		{
+			anunciar_victoria(jugador);
+		}
+		else if (esEmpate(tablero))
+		{
+			anunciar_empate();
+		}
+		cout << "Presiona Enter para ver el siguiente movimiento...";
+		getchar();
+	}
+	cout << "Se ha terminado la repeticion"
+		 << "\n";
+}
+
 int main()
 {
 	string nick = solicitar_nick_y_crear_archivos();
@@ -782,6 +883,7 @@ int main()
 		}
 		else if (eleccion == 4)
 		{
+			repetir_ultima_partida(nick);
 		}
 		else if (eleccion == 5)
 		{

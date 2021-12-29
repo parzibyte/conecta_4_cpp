@@ -984,6 +984,18 @@ void actualizarJugadorEnRanking(string nick)
 void mostrarTop10()
 {
 	vector<JugadorParaRanking> jugadores = obtenerJugadoresRanking();
+	cout << "Mostrando top 10\n";
+	cout << "--------------------------------------------------------"
+		 << "\n";
+	int i;
+	for (i = 0; i < jugadores.size(); i++)
+	{
+		JugadorParaRanking jugadorActual = jugadores[i];
+		cout << i + 1 << ". " << jugadorActual.nombre << " con puntuacion " << jugadorActual.puntuacion << " y " << jugadorActual.movimientos << " movimientos promedio"
+			 << "\n";
+	}
+	cout << "--------------------------------------------------------"
+		 << "\n";
 }
 
 int main()
@@ -1019,6 +1031,7 @@ int main()
 		}
 		else if (eleccion == 5)
 		{
+			mostrarTop10();
 		}
 		else if (eleccion == 6)
 		{

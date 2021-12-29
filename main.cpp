@@ -4,7 +4,6 @@
 #include <vector>
 #include <stdlib.h> // rand y RAND_MAX
 #include <unistd.h> // getpid
-
 using namespace std;
 const string ARCHIVO_RANKING = "ranking.txt",
 			 RESULTADO_EMPATE = "e",
@@ -33,7 +32,7 @@ struct ConteoConColumna
 
 struct EstadisticasDeJugador
 {
-	double partidas_ganadas = 0, partidas_perdidas = 0, empates = 0, total_movimientos = 0;
+	double partidas_ganadas, partidas_perdidas, empates, total_movimientos;
 	double porcentaje_ganadas, porcentaje_perdidas, porcentaje_empatadas, promedio_movimientos;
 };
 
@@ -67,13 +66,13 @@ string nombre_archivo_ultima_partida(string nick)
 
 bool archivo_existe(string nombre)
 {
-	ifstream archivo(nombre);
+	ifstream archivo(nombre.c_str());
 	return archivo.good();
 }
 void cambiar_configuracion(string nick, ConfiguracionTablero configuracion)
 {
 	ofstream archivo;
-	archivo.open(nombre_archivo_configuracion(nick), fstream::out);
+	archivo.open(nombre_archivo_configuracion(nick).c_str(), fstream::out);
 	archivo << configuracion.columnas;
 	archivo << endl;
 	archivo << configuracion.filas;
@@ -83,7 +82,7 @@ void cambiar_configuracion(string nick, ConfiguracionTablero configuracion)
 void escribir_archivo_resultados(string nick, string resultado, int movimientos)
 {
 	ofstream archivo;
-	archivo.open(nombre_archivo_configuracion(nick), fstream::out);
+	archivo.open(nombre_archivo_configuracion(nick).c_str(), fstream::out);
 	archivo << resultado;
 	archivo << ",";
 	archivo << movimientos;
@@ -98,11 +97,14 @@ string solicitar_nick_y_crear_archivos()
 	if (!archivo_existe(nombre_archivo_configuracion(nick)))
 	{
 		// Creamos los 3
-		std::ofstream(nombre_archivo_configuracion(nick));
-		std::ofstream(nombre_archivo_resultados(nick));
-		std::ofstream(nombre_archivo_ultima_partida(nick));
+		std::ofstream(nombre_archivo_configuracion(nick).c_str());
+		std::ofstream(nombre_archivo_resultados(nick).c_str());
+		std::ofstream(nombre_archivo_ultima_partida(nick).c_str());
 		// Y escribimos la configuración inicial
-		cambiar_configuracion(nick, ConfiguracionTablero{COLUMNAS_DEFECTO, FILAS_DEFECTO});
+		ConfiguracionTablero inicial;
+		inicial.columnas = COLUMNAS_DEFECTO;
+		inicial.filas = FILAS_DEFECTO;
+		cambiar_configuracion(nick, inicial);
 	}
 	return nick;
 }
@@ -110,20 +112,20 @@ string solicitar_nick_y_crear_archivos()
 ConfiguracionTablero obtener_configuracion_tablero(string nick)
 {
 	ConfiguracionTablero configuracion;
-	ifstream archivo(nombre_archivo_configuracion(nick));
+	ifstream archivo(nombre_archivo_configuracion(nick).c_str());
 	// Leemos la línea dentro de "linea" y convertimos
 	string linea;
 	getline(archivo, linea);
-	configuracion.columnas = stoi(linea);
+	configuracion.columnas = atoi(linea.c_str());
 	// Lo mismo pero para la segunda línea, misma que representa las columnas
 	getline(archivo, linea);
-	configuracion.filas = stoi(linea);
+	configuracion.filas = atoi(linea.c_str());
 	return configuracion;
 }
 
-vector<vector<char>> inicializarTablero(ConfiguracionTablero configuracion)
+vector<vector<char> > inicializarTablero(ConfiguracionTablero configuracion)
 {
-	vector<vector<char>> tablero;
+	vector<vector<char> > tablero;
 	int x, y;
 	for (y = 0; y < configuracion.filas; y++)
 	{
@@ -137,7 +139,7 @@ vector<vector<char>> inicializarTablero(ConfiguracionTablero configuracion)
 	return tablero;
 }
 
-void imprimir_tablero(vector<vector<char>> tablero)
+void imprimir_tablero(vector<vector<char> > tablero)
 {
 	cout << endl; //TODO: quitar antes de entregar
 	int y, x;
@@ -179,7 +181,7 @@ void imprimir_tablero(vector<vector<char>> tablero)
 	}
 	cout << endl;
 }
-int obtener_primera_fila_vacia(int columna, vector<vector<char>> tablero)
+int obtener_primera_fila_vacia(int columna, vector<vector<char> > tablero)
 {
 	int i;
 	for (i = tablero.size() - 1; i >= 0; i--)
@@ -191,7 +193,7 @@ int obtener_primera_fila_vacia(int columna, vector<vector<char>> tablero)
 	}
 	return -1;
 }
-int solicitar_columna(vector<vector<char>> tablero)
+int solicitar_columna(vector<vector<char> > tablero)
 {
 	while (true)
 	{
@@ -213,14 +215,14 @@ int solicitar_columna(vector<vector<char>> tablero)
 	}
 }
 
-vector<vector<char>> colocar_pieza(int columna, vector<vector<char>> tablero, char jugador)
+vector<vector<char> > colocar_pieza(int columna, vector<vector<char> > tablero, char jugador)
 {
 	//TODO: tal vez aquí registrar la partida
 	tablero[obtener_primera_fila_vacia(columna, tablero)][columna] = jugador;
 	return tablero;
 }
 
-int contarArribaDerecha(int x, int y, char jugador, vector<vector<char>> tablero)
+int contarArribaDerecha(int x, int y, char jugador, vector<vector<char> > tablero)
 {
 	int xFin = (x + FICHAS_JUNTAS_NECESARIAS_PARA_GANAR < tablero[0].size()) ? x + FICHAS_JUNTAS_NECESARIAS_PARA_GANAR - 1 : tablero[0].size() - 1;
 	int yInicio = (y - FICHAS_JUNTAS_NECESARIAS_PARA_GANAR >= 0) ? y - FICHAS_JUNTAS_NECESARIAS_PARA_GANAR + 1 : 0;
@@ -241,7 +243,7 @@ int contarArribaDerecha(int x, int y, char jugador, vector<vector<char>> tablero
 	return contador;
 }
 
-int contarArribaIzquierda(int x, int y, char jugador, vector<vector<char>> tablero)
+int contarArribaIzquierda(int x, int y, char jugador, vector<vector<char> > tablero)
 {
 	int xFin = (x - FICHAS_JUNTAS_NECESARIAS_PARA_GANAR >= 0) ? x - FICHAS_JUNTAS_NECESARIAS_PARA_GANAR + 1 : 0;
 	int yInicio = (y - FICHAS_JUNTAS_NECESARIAS_PARA_GANAR >= 0) ? y - FICHAS_JUNTAS_NECESARIAS_PARA_GANAR + 1 : 0;
@@ -262,7 +264,7 @@ int contarArribaIzquierda(int x, int y, char jugador, vector<vector<char>> table
 	return contador;
 }
 
-int contarArriba(int x, int y, char jugador, vector<vector<char>> tablero)
+int contarArriba(int x, int y, char jugador, vector<vector<char> > tablero)
 {
 	int yInicio = (y - FICHAS_JUNTAS_NECESARIAS_PARA_GANAR >= 0) ? y - FICHAS_JUNTAS_NECESARIAS_PARA_GANAR + 1 : 0;
 	int contador = 0;
@@ -280,7 +282,7 @@ int contarArriba(int x, int y, char jugador, vector<vector<char>> tablero)
 	return contador;
 }
 
-int contarAbajo(int x, int y, char jugador, vector<vector<char>> tablero)
+int contarAbajo(int x, int y, char jugador, vector<vector<char> > tablero)
 {
 	int yFin = (y + FICHAS_JUNTAS_NECESARIAS_PARA_GANAR <= tablero.size() - 1) ? y + FICHAS_JUNTAS_NECESARIAS_PARA_GANAR - 1 : tablero.size() - 1;
 	int contador = 0;
@@ -298,7 +300,7 @@ int contarAbajo(int x, int y, char jugador, vector<vector<char>> tablero)
 	return contador;
 }
 
-int contarDerecha(int x, int y, char jugador, vector<vector<char>> tablero)
+int contarDerecha(int x, int y, char jugador, vector<vector<char> > tablero)
 {
 	int xFin = (x + FICHAS_JUNTAS_NECESARIAS_PARA_GANAR < tablero[0].size()) ? x + FICHAS_JUNTAS_NECESARIAS_PARA_GANAR - 1 : tablero[0].size() - 1;
 	int contador = 0;
@@ -316,7 +318,7 @@ int contarDerecha(int x, int y, char jugador, vector<vector<char>> tablero)
 	return contador;
 }
 
-int contarAbajoDerecha(int x, int y, char jugador, vector<vector<char>> tablero)
+int contarAbajoDerecha(int x, int y, char jugador, vector<vector<char> > tablero)
 {
 	int xFin = (x + FICHAS_JUNTAS_NECESARIAS_PARA_GANAR < tablero[0].size()) ? x + FICHAS_JUNTAS_NECESARIAS_PARA_GANAR - 1 : tablero[0].size() - 1;
 	int yFin = (y + FICHAS_JUNTAS_NECESARIAS_PARA_GANAR < tablero.size()) ? y + FICHAS_JUNTAS_NECESARIAS_PARA_GANAR - 1 : tablero.size() - 1;
@@ -336,7 +338,7 @@ int contarAbajoDerecha(int x, int y, char jugador, vector<vector<char>> tablero)
 	}
 	return contador;
 }
-int contarIzquierda(int x, int y, char jugador, vector<vector<char>> tablero)
+int contarIzquierda(int x, int y, char jugador, vector<vector<char> > tablero)
 {
 	int xFin = (x - FICHAS_JUNTAS_NECESARIAS_PARA_GANAR >= 0) ? x - FICHAS_JUNTAS_NECESARIAS_PARA_GANAR + 1 : 0;
 	int contador = 0;
@@ -353,7 +355,7 @@ int contarIzquierda(int x, int y, char jugador, vector<vector<char>> tablero)
 	}
 	return contador;
 }
-int contarAbajoIzquierda(int x, int y, char jugador, vector<vector<char>> tablero)
+int contarAbajoIzquierda(int x, int y, char jugador, vector<vector<char> > tablero)
 {
 	int xFin = (x - FICHAS_JUNTAS_NECESARIAS_PARA_GANAR >= 0) ? x - FICHAS_JUNTAS_NECESARIAS_PARA_GANAR + 1 : 0;
 	int yFin = (y + FICHAS_JUNTAS_NECESARIAS_PARA_GANAR < tablero.size()) ? y + FICHAS_JUNTAS_NECESARIAS_PARA_GANAR - 1 : tablero.size() - 1;
@@ -375,7 +377,7 @@ int contarAbajoIzquierda(int x, int y, char jugador, vector<vector<char>> tabler
 	return contador;
 }
 
-bool jugador_gana(char jugador, vector<vector<char>> tablero)
+bool jugador_gana(char jugador, vector<vector<char> > tablero)
 {
 	/*
  * Solo necesitamos
@@ -415,9 +417,9 @@ bool jugador_gana(char jugador, vector<vector<char>> tablero)
 	return false;
 }
 
-int obtener_columna_ganadora(char jugador, vector<vector<char>> tablero)
+int obtener_columna_ganadora(char jugador, vector<vector<char> > tablero)
 {
-	vector<vector<char>> tablero_original;
+	vector<vector<char> > tablero_original;
 	tablero_original = tablero;
 	int i;
 	for (i = 0; i < tablero[0].size(); i++)
@@ -434,7 +436,7 @@ int obtener_columna_ganadora(char jugador, vector<vector<char>> tablero)
 	}
 	return -1;
 }
-int obtener_primera_fila_llena(int columna, vector<vector<char>> tablero)
+int obtener_primera_fila_llena(int columna, vector<vector<char> > tablero)
 {
 	int i;
 	for (i = 0; i < tablero.size(); ++i)
@@ -446,10 +448,12 @@ int obtener_primera_fila_llena(int columna, vector<vector<char>> tablero)
 	}
 	return -1;
 }
-ConteoConColumna obtener_columna_en_la_que_se_obtiene_mayor_puntaje(char jugador, vector<vector<char>> tableroOriginal)
+ConteoConColumna obtener_columna_en_la_que_se_obtiene_mayor_puntaje(char jugador, vector<vector<char> > tableroOriginal)
 {
-	ConteoConColumna conteoConCoordenada{0, -1};
-	vector<vector<char>> tablero = tableroOriginal;
+	ConteoConColumna conteoConCoordenada;
+	conteoConCoordenada.conteo = 0;
+	conteoConCoordenada.columna = -1;
+	vector<vector<char> > tablero = tableroOriginal;
 	int x, conteo;
 	for (x = 0; x < tablero[0].size(); ++x)
 	{
@@ -526,9 +530,9 @@ int aleatorio_en_rango(int minimo, int maximo)
 	return minimo + rand() / (RAND_MAX / (maximo - minimo + 1) + 1);
 }
 
-int obtener_columna_aleatoria(char jugador, vector<vector<char>> tableroOriginal)
+int obtener_columna_aleatoria(char jugador, vector<vector<char> > tableroOriginal)
 {
-	vector<vector<char>> tablero;
+	vector<vector<char> > tablero;
 	while (1)
 	{
 		tablero = tableroOriginal;
@@ -539,7 +543,7 @@ int obtener_columna_aleatoria(char jugador, vector<vector<char>> tableroOriginal
 		}
 	}
 }
-int obtener_columna_central(char jugador, vector<vector<char>> tableroOriginal)
+int obtener_columna_central(char jugador, vector<vector<char> > tableroOriginal)
 {
 	int mitad = (tableroOriginal[0].size() - 1) / 2;
 	if (obtener_primera_fila_vacia(mitad, tableroOriginal) != -1)
@@ -556,7 +560,7 @@ char obtener_oponente(char jugador)
 	}
 	return JUGADOR_HUMANO;
 }
-int elegir_mejor_columna(char jugador, vector<vector<char>> tablero)
+int elegir_mejor_columna(char jugador, vector<vector<char> > tablero)
 {
 	// Voy a comprobar si puedo ganar...
 	int posibleColumnaGanadora = obtener_columna_ganadora(jugador, tablero);
@@ -606,7 +610,7 @@ int elegir_mejor_columna(char jugador, vector<vector<char>> tablero)
 	return 0;
 }
 
-bool esEmpate(vector<vector<char>> tablero)
+bool esEmpate(vector<vector<char> > tablero)
 {
 	int i;
 	for (i = 0; i < tablero[0].size(); ++i)
@@ -621,7 +625,7 @@ bool esEmpate(vector<vector<char>> tablero)
 void guardarPartidaTerminada(string nick, string resultado, int movimientos)
 {
 	ofstream archivo;
-	archivo.open(nombre_archivo_resultados(nick), ios_base::app);
+	archivo.open(nombre_archivo_resultados(nick).c_str(), ios_base::app);
 	archivo << resultado << DELIMITADOR_RESULTADOS << movimientos;
 	archivo << endl;
 	archivo.close();
@@ -629,11 +633,11 @@ void guardarPartidaTerminada(string nick, string resultado, int movimientos)
 void guardar_movimientos_de_partida(string nick, vector<Movimiento> movimientos)
 {
 	ofstream archivo;
-	archivo.open(nombre_archivo_ultima_partida(nick), fstream::out);
+	archivo.open(nombre_archivo_ultima_partida(nick).c_str(), fstream::out);
 	int i;
 	for (i = 0; i < movimientos.size(); i++)
 	{
-		auto movimiento = movimientos[i];
+		Movimiento movimiento = movimientos[i];
 		archivo << movimiento.jugador << DELIMITADOR_MOVIMIENTOS << movimiento.columna << "\n";
 	}
 	archivo.close();
@@ -643,7 +647,7 @@ vector<Movimiento> obtener_movimientos_de_partida(string nick)
 {
 	vector<Movimiento> movimientos;
 	Movimiento movimiento;
-	ifstream archivo(nombre_archivo_ultima_partida(nick));
+	ifstream archivo(nombre_archivo_ultima_partida(nick).c_str());
 	string linea, jugador, columna;
 	while (getline(archivo, linea))
 	{
@@ -651,7 +655,7 @@ vector<Movimiento> obtener_movimientos_de_partida(string nick)
 		getline(input_stringstream, jugador, DELIMITADOR_MOVIMIENTOS);
 		getline(input_stringstream, columna, DELIMITADOR_MOVIMIENTOS);
 		movimiento.jugador = jugador[0];
-		movimiento.columna = stoi(columna);
+		movimiento.columna = atoi(columna.c_str());
 		movimientos.push_back(movimiento);
 	}
 	return movimientos;
@@ -677,8 +681,8 @@ void anunciar_empate()
 
 void jugar(string nick)
 {
-	auto configuracion = obtener_configuracion_tablero(nick);
-	auto tablero = inicializarTablero(configuracion);
+	ConfiguracionTablero configuracion = obtener_configuracion_tablero(nick);
+	vector<vector<char> > tablero = inicializarTablero(configuracion);
 	int jugadorActual = JUGADOR_HUMANO;
 	int columna;
 	int conteo_movimientos = 0;
@@ -769,14 +773,21 @@ void solicitar_nueva_configuracion_tablero_y_guardar(string nick)
 			cout << "Numero de columnas no valido. Intenta de nuevo" << endl;
 		}
 	}
-	cambiar_configuracion(nick, ConfiguracionTablero{columnas, filas});
+	ConfiguracionTablero nuevaConfiguracion;
+	nuevaConfiguracion.columnas = columnas;
+	nuevaConfiguracion.filas = filas;
+	cambiar_configuracion(nick, nuevaConfiguracion);
 	cout << "Se ha guardado la configuracion" << endl;
 }
 
 EstadisticasDeJugador obtener_estadisticas(string nick)
 {
 	EstadisticasDeJugador estadisticas;
-	ifstream archivo(nombre_archivo_resultados(nick));
+	estadisticas.empates = 0;
+	estadisticas.partidas_ganadas = 0;
+	estadisticas.partidas_perdidas = 0;
+	estadisticas.total_movimientos = 0;
+	ifstream archivo(nombre_archivo_resultados(nick).c_str());
 	string linea, resultado, movimientos;
 	while (getline(archivo, linea))
 	{
@@ -795,7 +806,7 @@ EstadisticasDeJugador obtener_estadisticas(string nick)
 		{
 			estadisticas.partidas_perdidas++;
 		}
-		estadisticas.total_movimientos += stoi(movimientos);
+		estadisticas.total_movimientos += atoi(movimientos.c_str());
 	}
 	double total_partidas = estadisticas.partidas_ganadas + estadisticas.partidas_perdidas + estadisticas.empates;
 	estadisticas.porcentaje_ganadas = (estadisticas.partidas_ganadas * 100) / total_partidas;
@@ -807,7 +818,7 @@ EstadisticasDeJugador obtener_estadisticas(string nick)
 
 void ver_estadisticas(string nick)
 {
-	auto estadisticas = obtener_estadisticas(nick);
+	EstadisticasDeJugador estadisticas = obtener_estadisticas(nick);
 	cout << "Mostrando estadisticas para " << nick << "\n";
 	cout << "Porcentaje de partidas ganadas: " << estadisticas.porcentaje_ganadas << " %\n";
 	cout << "Porcentaje de partidas perdidas: " << estadisticas.porcentaje_perdidas << " %\n";
@@ -821,9 +832,9 @@ void repetir_ultima_partida(string nick)
 	getchar();
 	cout << "Repitiendo ultima partida guardada para '" << nick << "'"
 		 << "\n";
-	auto m = obtener_movimientos_de_partida(nick);
-	auto configuracion = obtener_configuracion_tablero(nick);
-	auto tablero = inicializarTablero(configuracion);
+	vector<Movimiento> m = obtener_movimientos_de_partida(nick);
+	ConfiguracionTablero configuracion = obtener_configuracion_tablero(nick);
+	vector<vector<char> > tablero = inicializarTablero(configuracion);
 	int i;
 	for (i = 0; i < m.size(); i++)
 	{

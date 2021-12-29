@@ -570,7 +570,6 @@ char obtener_oponente(char jugador)
 }
 int elegir_mejor_columna(char jugador, vector<vector<char> > tablero)
 {
-	return 0;
 	// Voy a comprobar si puedo ganar...
 	int posibleColumnaGanadora = obtener_columna_ganadora(jugador, tablero);
 	if (posibleColumnaGanadora != -1)

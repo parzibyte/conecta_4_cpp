@@ -42,6 +42,12 @@ struct Movimiento
 	int columna;
 };
 
+struct JugadorParaRanking
+{
+	string nombre;
+	double puntuacion, movimientos;
+};
+
 string solicitar_nick()
 {
 	string nombre;
@@ -832,14 +838,14 @@ void repetir_ultima_partida(string nick)
 	getchar();
 	cout << "Repitiendo ultima partida guardada para '" << nick << "'"
 		 << "\n";
-	vector<Movimiento> m = obtener_movimientos_de_partida(nick);
+	vector<Movimiento> movimientos = obtener_movimientos_de_partida(nick);
 	ConfiguracionTablero configuracion = obtener_configuracion_tablero(nick);
 	vector<vector<char> > tablero = inicializarTablero(configuracion);
 	int i;
-	for (i = 0; i < m.size(); i++)
+	for (i = 0; i < movimientos.size(); i++)
 	{
-		char jugador = m[i].jugador;
-		int columna = m[i].columna;
+		char jugador = movimientos[i].jugador;
+		int columna = movimientos[i].columna;
 		if (jugador == JUGADOR_HUMANO)
 		{
 			cout << "El jugador elige la columna " << columna << "\n";
@@ -863,6 +869,10 @@ void repetir_ultima_partida(string nick)
 	}
 	cout << "Se ha terminado la repeticion"
 		 << "\n";
+}
+
+JugadorParaRanking calcular_puntaje(string nick){
+	EstadisticasDeJugador estadisticas=obtener_estadisticas(nick);
 }
 
 int main()

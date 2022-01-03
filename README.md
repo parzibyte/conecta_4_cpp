@@ -1,5 +1,7 @@
 Se trata del conocido juego 'Conecta 4'. Las partidas se jugarán sobre un tablero de a lo sumo 10x10 casillas, en el que tendremos que ir situando piezas alternativamente con el ordenador hasta conectar cuatro de ellas en horizontal, en vertical o en diagonal. Ganará quien primer consiga el objetivo (ordenador o jugador), y se considerará un empate cuando se llene el tablero sin haberlo conseguido ninguno de los dos.
+
 El funcionamiento del juego se apoyará en un fichero ranking.txt para almacenar las puntuaciones de los 10 mejores jugadores, y en tres ficheros para cada jugador, cuyo nombre será el nick del jugador, una barra baja y las siguientes terminaciones:
+
 - configuracion.txt, que almacenará el tamaño del tablero incluyendo el número de casillas (filas y columnas del tablero inicialmente 10 x 10).
 - resultados.txt, que contendrá los resultados conseguidos en las partidas.
 - ultimapartida.dat, que almacenará los datos necesarios para reproducir la última partida jugada.
@@ -47,12 +49,22 @@ Dame opción:
 
 
 ```
-|| || || || || ||
------------------------
-0123456789
-```
+| | | | | | | | | | |
+| | | | | | | | | | |
+| | | | | | | | | | |
+| | | | | | | | | | |
+| | | | | | | | | | |
+| | | | | | | | | | |
+| | | | | | | | | | |
+| | | | | | | | | | |
+| | | | | | | | | | |
+| | | | | | | | | | |
++-+-+-+-+-+-+-+-+-+-+
+|0|1|2|3|4|5|6|7|8|9|
 
 Seleccione la columna para su tirada:
+```
+
 
 
 El ordenador introducirá la ficha del jugador en la columna indicada (una X mayúscula) y a continuación introducirá la suya propia (una O mayúscula), diseñando para ello un algoritmo apropiado. El diseño de este algoritmo influirá en la nota del proyecto (1 punto).
@@ -60,10 +72,21 @@ El ordenador introducirá la ficha del jugador en la columna indicada (una X may
 A continuación, se muestra un ejemplo de un posible resultado tras pedir depositar la ficha en la columna 3
 
 ```
-|| || || || |O| |X| -----------------------
-0123456789
-```
+| | | | | | | | | | |
+| | | | | | | | | | |
+| | | | | | | | | | |
+| | | | | | | | | | |
+| | | | | | | | | | |
+| | | | | | | | | | |
+| | | | | | | | | | |
+| | | | | | | | | | |
+| | | | | | | | | | |
+| | | |X| | | | | | |
++-+-+-+-+-+-+-+-+-+-+
+|0|1|2|3|4|5|6|7|8|9|
+
 Seleccione la columna para su tirada:
+```
 
 
 El programa deberá continuar solicitando al usuario su tirada hasta que el ordenador o el usuario consigan ganar la partida (o el tablero se llene). En ese momento, se actualizará el fichero terminado en _resultados.txt con la nueva información, para permitir visualizar las estadísticas en la opción 3 en el futuro; y también el fichero terminado en _ultimapartida.dat, para permitir utilizar posteriormente la opción 4 si el usuario desea revisar sus movimientos. Finalmente, se regresará al menú principal.

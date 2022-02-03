@@ -1,3 +1,7 @@
+# Tutorial y explicación
+
+En el blog de Parzibyte: https://parzibyte.me/blog/2022/02/03/conecta-4-cpp-ia-ranking-estadisticas-jugadores/
+
 Se trata del conocido juego 'Conecta 4'. Las partidas se jugarán sobre un tablero de a lo sumo 10x10 casillas, en el que tendremos que ir situando piezas alternativamente con el ordenador hasta conectar cuatro de ellas en horizontal, en vertical o en diagonal. Ganará quien primer consiga el objetivo (ordenador o jugador), y se considerará un empate cuando se llene el tablero sin haberlo conseguido ninguno de los dos.
 
 El funcionamiento del juego se apoyará en un fichero ranking.txt para almacenar las puntuaciones de los 10 mejores jugadores, y en tres ficheros para cada jugador, cuyo nombre será el nick del jugador, una barra baja y las siguientes terminaciones:
